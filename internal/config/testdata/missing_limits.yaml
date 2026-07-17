@@ -1,0 +1,7 @@
+server:
+  http_port: 8080
+redis:
+  address: "localhost:6379"
+  password: "s3cret"
+postgres:
+  dsn: "postgres://x"

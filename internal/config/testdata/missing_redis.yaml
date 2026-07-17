@@ -1,0 +1,9 @@
+server:
+  http_port: 8080
+limits:
+  login_attempts: 10
+  password_attempts: 100
+  ip_attempts: 1000
+  window_time: 60s
+postgres:
+  dsn: "postgres://x"
