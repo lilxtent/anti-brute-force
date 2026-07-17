@@ -1,0 +1,11 @@
+server: {}
+limits:
+  login_attempts: 10
+  password_attempts: 100
+  ip_attempts: 1000
+  window_time: 60s
+redis:
+  address: "localhost:6379"
+  password: "s3cret"
+postgres:
+  dsn: "postgres://x"
