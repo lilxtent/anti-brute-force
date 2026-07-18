@@ -26,7 +26,7 @@ func TestSet_AddDeduplicates(t *testing.T) {
 	s.Add(netip.MustParsePrefix("10.0.0.0/8"))
 	s.Add(netip.MustParsePrefix("10.0.0.0/8"))
 
-	require.Len(t, s.prefixies, 1)
+	require.Len(t, s.prefixes, 1)
 }
 
 func TestSet_AddMasksHostBits(t *testing.T) {
@@ -34,11 +34,11 @@ func TestSet_AddMasksHostBits(t *testing.T) {
 	// Host bits set; Masked() should normalise to 10.0.0.0/8.
 	s.Add(netip.MustParsePrefix("10.11.12.13/8"))
 
-	require.Len(t, s.prefixies, 1)
-	require.Equal(t, netip.MustParsePrefix("10.0.0.0/8"), *s.prefixies[0])
+	require.Len(t, s.prefixes, 1)
+	require.Equal(t, netip.MustParsePrefix("10.0.0.0/8"), s.prefixes[0])
 	// Adding the already-masked form must be treated as a duplicate.
 	s.Add(netip.MustParsePrefix("10.0.0.0/8"))
-	require.Len(t, s.prefixies, 1)
+	require.Len(t, s.prefixes, 1)
 }
 
 func TestSet_Remove(t *testing.T) {
@@ -51,7 +51,7 @@ func TestSet_Remove(t *testing.T) {
 
 	require.False(t, s.Contains(netip.MustParseAddr("192.168.0.42")))
 	require.True(t, s.Contains(netip.MustParseAddr("172.16.5.5")))
-	require.Len(t, s.prefixies, 1)
+	require.Len(t, s.prefixes, 1)
 }
 
 func TestSet_RemoveMissingIsNoop(t *testing.T) {
@@ -59,7 +59,7 @@ func TestSet_RemoveMissingIsNoop(t *testing.T) {
 	s.Add(netip.MustParsePrefix("192.168.0.0/24"))
 	s.Remove(netip.MustParsePrefix("10.0.0.0/8"))
 
-	require.Len(t, s.prefixies, 1)
+	require.Len(t, s.prefixes, 1)
 	require.True(t, s.Contains(netip.MustParseAddr("192.168.0.1")))
 }
 
@@ -89,7 +89,7 @@ func TestSet_Load(t *testing.T) {
 		netip.MustParsePrefix("192.168.0.0/24"),
 	})
 
-	require.Len(t, s.prefixies, 2)
+	require.Len(t, s.prefixes, 2)
 	require.True(t, s.Contains(netip.MustParseAddr("10.1.2.3")))
 	require.True(t, s.Contains(netip.MustParseAddr("192.168.0.1")))
 }
@@ -102,7 +102,7 @@ func TestSet_LoadReplacesExisting(t *testing.T) {
 
 	require.False(t, s.Contains(netip.MustParseAddr("172.16.0.1")))
 	require.True(t, s.Contains(netip.MustParseAddr("10.0.0.1")))
-	require.Len(t, s.prefixies, 1)
+	require.Len(t, s.prefixes, 1)
 }
 
 func TestSet_LoadEmpty(t *testing.T) {
@@ -110,7 +110,7 @@ func TestSet_LoadEmpty(t *testing.T) {
 	s.Add(netip.MustParsePrefix("10.0.0.0/8"))
 	s.Load(nil)
 
-	require.Empty(t, s.prefixies)
+	require.Empty(t, s.prefixes)
 	require.False(t, s.Contains(netip.MustParseAddr("10.0.0.1")))
 }
 
