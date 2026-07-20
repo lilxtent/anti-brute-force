@@ -16,7 +16,7 @@ build-cli:
 	go build -o $(CLI_BIN) ./cmd/cli
 
 run:
-	#docker compose up --build
+	docker compose up --build
 
 down:
 	docker compose down
@@ -24,22 +24,21 @@ down:
 test:
 	go test ./...
 
-## lint: run golangci-lint
+## test-integration: run integration tests (needs postgres, e.g. `docker compose up -d postgres`)
+test-integration:
+	go test -tags integration ./...
+
 lint:
-	golangci-lint run ./...
+	golangci-lint run --build-tags integration ./...
 
-## lint-fix: run golangci-lint and auto-fix issues
 lint-fix:
-	golangci-lint run --fix ./...
+	golangci-lint run --build-tags integration --fix ./...
 
-## install-lint: install the pinned golangci-lint version
 install-lint:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
-## tidy: sync go.mod/go.sum
 tidy:
 	go mod tidy
 
-## clean: remove build artifacts
 clean:
 	rm -rf $(BIN_DIR)
