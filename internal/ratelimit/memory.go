@@ -88,9 +88,3 @@ func (s *MemoryStore) evictIdle() {
 		}
 	}
 }
-
-func (s *MemoryStore) size() int {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return len(s.buckets)
-}
