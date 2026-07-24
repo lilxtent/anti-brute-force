@@ -15,7 +15,6 @@ if ts == nil then ts = now_ms end
 local elapsed = now_ms - ts
 if elapsed < 0 then elapsed = 0 end
 
--- leak at capacity/window per ms; multiply before dividing to keep it exact.
 level = level - (elapsed * capacity) / window_ms
 if level < 0 then level = 0 end
 

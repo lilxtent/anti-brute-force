@@ -104,7 +104,7 @@ var _ = Describe("Store", func() {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
-			clk.Advance(3 * time.Second) // leaks capacity (3) fully
+			clk.Advance(3 * time.Second)
 
 			ok, err := store.Allow(ctx, "login:alice", cfg)
 			Expect(err).NotTo(HaveOccurred())
@@ -117,7 +117,7 @@ var _ = Describe("Store", func() {
 				Expect(err).NotTo(HaveOccurred())
 			}
 
-			clk.Advance(1 * time.Second) // leakRate is 1/s, so one slot frees up
+			clk.Advance(1 * time.Second)
 
 			ok, err := store.Allow(ctx, "login:alice", cfg)
 			Expect(err).NotTo(HaveOccurred())
