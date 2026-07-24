@@ -84,6 +84,14 @@ func (s *SubnetRepository) delete(ctx context.Context, list ListType, prefix net
 	return nil
 }
 
+func (s *SubnetRepository) GetWhiteList(ctx context.Context) ([]netip.Prefix, error) {
+	return s.GetAll(ctx, WhiteList)
+}
+
+func (s *SubnetRepository) GetBlackList(ctx context.Context) ([]netip.Prefix, error) {
+	return s.GetAll(ctx, BlackList)
+}
+
 func (s *SubnetRepository) GetAll(ctx context.Context, list ListType) ([]netip.Prefix, error) {
 	query := fmt.Sprintf("select cidr::text from %s", list)
 	rows, err := s.db.QueryContext(ctx, query)
