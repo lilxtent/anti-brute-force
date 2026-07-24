@@ -2,25 +2,48 @@ package redis
 
 import (
 	"context"
-	"errors"
+	_ "embed"
+
+	goredis "github.com/redis/go-redis/v9"
 
 	"github.com/lilxtent/anti-brute-force/internal/ratelimit"
 )
 
-var errNotImplemented = errors.New("redis store: not implemented")
+const keyPrefix = "abf:rl:"
 
-type Store struct{}
+//go:embed lua/allow.lua
+var allowScriptSrc string
 
-func New() *Store { return &Store{} }
+var allowScript = goredis.NewScript(allowScriptSrc)
+
+type Store struct {
+	client *goredis.Client
+	clock  ratelimit.Clock
+}
+
+func New(client *goredis.Client, clock ratelimit.Clock) *Store {
+	return &Store{client: client, clock: clock}
+}
 
 var _ ratelimit.Store = (*Store)(nil)
 
-func (s *Store) Allow(_ context.Context, _ string, _ ratelimit.BucketConfig) (bool, error) {
-	return false, errNotImplemented
+func (s *Store) Allow(ctx context.Context, key string, cfg ratelimit.BucketConfig) (bool, error) {
+	res, err := allowScript.Run(ctx, s.client,
+		[]string{keyPrefix + key},
+		s.clock.Now().UnixMilli(),
+		cfg.Capacity,
+		cfg.Window.Milliseconds(),
+	).Int()
+	if err != nil {
+		return false, err
+	}
+	return res == 1, nil
 }
 
-func (s *Store) Reset(_ context.Context, _ string) error {
-	return errNotImplemented
+func (s *Store) Reset(ctx context.Context, key string) error {
+	return s.client.Del(ctx, keyPrefix+key).Err()
 }
 
-func (s *Store) Close() error { return nil }
+func (s *Store) Close() error {
+	return s.client.Close()
+}

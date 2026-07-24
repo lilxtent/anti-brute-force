@@ -24,7 +24,6 @@ down:
 test:
 	go test ./...
 
-## test-integration: run integration tests (needs postgres, e.g. `docker compose up -d postgres`)
 test-integration:
 	go test -tags integration ./...
 
