@@ -52,6 +52,13 @@ func (s *SubnetRepository) Connect() error {
 	return nil
 }
 
+func (s *SubnetRepository) Close() error {
+	if s.db == nil {
+		return nil
+	}
+	return s.db.Close()
+}
+
 func (s *SubnetRepository) AddToWhiteList(ctx context.Context, prefix netip.Prefix) error {
 	return s.add(ctx, WhiteList, prefix)
 }
