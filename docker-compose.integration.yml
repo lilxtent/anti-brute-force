@@ -1,0 +1,23 @@
+services:
+  integration-tests:
+    image: golang:1.26-alpine
+    container_name: abf-integration-tests
+    working_dir: /app
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+    environment:
+      ABF_TEST_POSTGRES_DSN: postgres://user:pass@postgres:5432/db?sslmode=disable
+      ABF_TEST_REDIS_ADDR: redis:6379
+      ABF_TEST_REDIS_PASSWORD: pass
+    command:
+      - sh
+      - -c
+      - go test -tags integration -count=1 -p 1 ./...
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
