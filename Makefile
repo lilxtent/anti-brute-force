@@ -4,7 +4,19 @@ CLI_BIN := $(BIN_DIR)/abf-cli
 
 GOLANGCI_LINT_VERSION := v2.12.2
 
-.PHONY: build build-server build-cli run down test test-integration lint lint-fix install-lint tidy clean
+COMPOSE_FILE := docker-compose.yml
+INTEGRATION_COMPOSE_FILE := docker-compose.integration.yml
+
+POSTGRES_USER ?= user
+POSTGRES_PASSWORD ?= pass
+POSTGRES_DB ?= db
+POSTGRES_PORT ?= 5432
+POSTGRES_DSN ?= postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+MIGRATIONS_DIR ?= migrations
+GOOSE := go run github.com/pressly/goose/v3/cmd/goose@latest
+
+.PHONY: build build-server build-cli run down logs migrate migrate-down migrate-status \
+	test test-integration test-integration-local lint lint-fix install-lint tidy clean
 
 ## build: compile the server and CLI binaries into ./bin
 build: build-server build-cli
@@ -16,16 +28,35 @@ build-cli:
 	go build -o $(CLI_BIN) ./cmd/cli
 
 run:
-	docker compose up --build
+	docker compose -f $(COMPOSE_FILE) up --build
 
 down:
-	docker compose down
+	docker compose -f $(COMPOSE_FILE) down
+
+logs:
+	docker compose -f $(COMPOSE_FILE) logs -f
+
+migrate:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_DSN)" up
+
+migrate-down:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_DSN)" down
+
+migrate-status:
+	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres "$(POSTGRES_DSN)" status
 
 test:
 	go test ./...
 
 test-integration:
-	go test -tags integration ./...
+	docker compose -f $(COMPOSE_FILE) -f $(INTEGRATION_COMPOSE_FILE) up --build \
+		--abort-on-container-exit --exit-code-from integration-tests integration-tests; \
+	status=$$?; \
+	docker compose -f $(COMPOSE_FILE) -f $(INTEGRATION_COMPOSE_FILE) down -v; \
+	exit $$status
+
+test-integration-local: migrate
+	go test -tags integration -count=1 -p 1 ./...
 
 lint:
 	golangci-lint run --build-tags integration ./...

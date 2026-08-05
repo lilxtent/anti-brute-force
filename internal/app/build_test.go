@@ -26,6 +26,14 @@ func testRedisConfig() config.RedisConfig {
 	return config.RedisConfig{Address: addr, Password: password}
 }
 
+func testPostgresDSN() string {
+	dsn := os.Getenv("ABF_TEST_POSTGRES_DSN")
+	if dsn == "" {
+		dsn = "postgres://user:pass@localhost:5432/db?sslmode=disable"
+	}
+	return dsn
+}
+
 func baseConfig() *config.Config {
 	return &config.Config{
 		Server: config.ServerConfig{HttpPort: 8080},
@@ -35,7 +43,8 @@ func baseConfig() *config.Config {
 			IPAttempts:       3,
 			WindowTime:       time.Minute,
 		},
-		Redis: testRedisConfig(),
+		Redis:    testRedisConfig(),
+		Postgres: config.PostgresConfig{Dsn: testPostgresDSN()},
 	}
 }
 

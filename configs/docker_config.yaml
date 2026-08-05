@@ -1,0 +1,12 @@
+server:
+  http_port: 8080
+limits:
+  login_attempts: 10
+  password_attempts: 100
+  ip_attempts: 1000
+  window_time: 60s
+redis:
+  address: "redis:6379"
+  password: "pass"
+postgres:
+  dsn: "postgres://user:pass@postgres:5432/db?sslmode=disable"

@@ -30,5 +30,42 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    image: golang:1.26-alpine
+    container_name: abf-migrate
+    working_dir: /app
+    volumes:
+      - .:/app
+      - go-mod-cache:/go/pkg/mod
+    command:
+      - sh
+      - -c
+      - go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres "postgres://user:pass@postgres:5432/db?sslmode=disable" up
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  abf:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+      args:
+        SERVICE: server
+    image: abf-server:develop
+    container_name: abf-server
+    restart: unless-stopped
+    environment:
+      CONFIG_FILE: /etc/abf/docker_config.yaml
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   postgres-data:
+  go-mod-cache:

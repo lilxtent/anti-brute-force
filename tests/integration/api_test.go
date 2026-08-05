@@ -58,13 +58,8 @@ func prepareDB(t *testing.T, dsn string) {
 	require.NoError(t, err)
 	defer db.Close()
 	require.NoError(t, db.PingContext(ctx),
-		"postgres must be reachable at %q (docker compose up -d postgres)", dsn)
+		"postgres must be reachable at %q with the migrations applied (make migrate)", dsn)
 
-	_, err = db.ExecContext(ctx, `
-		create table if not exists white_list (cidr cidr not null primary key);
-		create table if not exists black_list (cidr cidr not null primary key);
-	`)
-	require.NoError(t, err)
 	_, err = db.ExecContext(ctx, "truncate white_list, black_list")
 	require.NoError(t, err)
 }

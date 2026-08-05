@@ -21,9 +21,6 @@ import (
 // defaultDSN matches the postgres service defined in docker-compose.yml.
 const defaultDSN = "postgres://user:pass@localhost:5432/db?sslmode=disable"
 
-// adminDB is a raw connection used only by the suite to manage schema and
-// fixtures (create tables, truncate between specs). The code under test opens
-// its own connection through SubnetRepository.Connect.
 var (
 	dsn     string
 	adminDB *sql.DB
@@ -47,15 +44,8 @@ var _ = BeforeSuite(func() {
 	adminDB, err = sql.Open("pgx", dsn)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(adminDB.PingContext(ctx)).To(Succeed(),
-		"postgres must be reachable at %q (start it with `docker compose up -d postgres` "+
+		"postgres must be reachable at %q with the migrations applied (`make migrate`, "+
 			"or set ABF_TEST_POSTGRES_DSN)", dsn)
-
-	// Ensure the schema exists (mirrors migrations/*_init_white_black_lists_tables.sql).
-	_, err = adminDB.ExecContext(ctx, `
-		create table if not exists white_list (cidr cidr not null primary key);
-		create table if not exists black_list (cidr cidr not null primary key);
-	`)
-	Expect(err).NotTo(HaveOccurred())
 })
 
 var _ = AfterSuite(func() {
